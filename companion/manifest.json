@@ -1,0 +1,27 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"id": "pltech-kumatimer",
+	"name": "PL Tech: KUMA Timer",
+	"shortname": "KUMA Timer",
+	"description": "Control KUMA Timer via HTTP/JSON — start, stop, pause, load cues & presets, send messages, live feedbacks and variables",
+	"version": "1.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/pltech-dev/companion-module-kumatimer.git",
+	"bugs": "https://github.com/pltech-dev/companion-module-kumatimer/issues",
+	"maintainers": [
+		{
+			"name": "PL Tech",
+			"email": "kuma@pl-tech.co.uk"
+		}
+	],
+	"runtime": {
+		"type": "node22",
+		"api": "nodejs-ipc",
+		"apiVersion": "1.14.1",
+		"entrypoint": "../dist/main.js"
+	},
+	"legacyIds": ["kumatimer", "kumatimer-http", "pltech-kumatimer-http"],
+	"manufacturer": "PL Tech",
+	"products": ["KUMA Timer"],
+	"keywords": ["timer", "countdown", "http", "live", "broadcast", "kuma", "presenter"]
+}
