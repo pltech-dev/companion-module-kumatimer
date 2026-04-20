@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create the release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack (Yarn 4)
+        run: |
+          corepack enable
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build & package
+        run: yarn package
+
+      - name: Sanity check — tag vs package.json version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(node -p "require('./package.json').version")
+          echo "tag=$TAG  package.json=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag ($TAG) does not match package.json version ($PKG)."
+            echo "Bump version in package.json before tagging, or retag to match."
+            exit 1
+          fi
+
+      - name: Locate tgz artifact
+        id: tgz
+        run: |
+          FILE=$(ls pltech-kumatimer-*.tgz | head -1)
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "Found: $FILE"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          FILE="${{ steps.tgz.outputs.file }}"
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "KUMA Timer Companion Module $TAG" \
+            --notes "Bitfocus Companion module for KUMA Timer — importable bundle.
+
+## Installation
+1. In Companion, go to **Modules** → **Import module package**
+2. Select the attached \`$FILE\`
+3. No dev mode required
+
+Built with \`@companion-module/tools\` against \`@companion-module/base ~1.14.1\`.
+Requires Node 22.20+." \
+            "$FILE"
