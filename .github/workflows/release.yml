@@ -52,18 +52,20 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG#v}"
           FILE="${{ steps.tgz.outputs.file }}"
+          cat > /tmp/release-notes.md <<EOF
+          Bitfocus Companion module for KUMA Timer — importable bundle.
+
+          ## Installation
+          1. In Companion, go to **Modules** → **Import module package**
+          2. Select the attached \`$FILE\`
+          3. No dev mode required
+
+          Built with \`@companion-module/tools\` against \`@companion-module/base ~1.14.1\`.
+          Requires Node 22.20+.
+          EOF
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --title "KUMA Timer Companion Module $TAG" \
-            --notes "Bitfocus Companion module for KUMA Timer — importable bundle.
-
-## Installation
-1. In Companion, go to **Modules** → **Import module package**
-2. Select the attached \`$FILE\`
-3. No dev mode required
-
-Built with \`@companion-module/tools\` against \`@companion-module/base ~1.14.1\`.
-Requires Node 22.20+." \
+            --notes-file /tmp/release-notes.md \
             "$FILE"
