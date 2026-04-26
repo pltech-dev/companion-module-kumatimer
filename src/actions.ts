@@ -40,6 +40,35 @@ export function setupActions(
 			callback: async () => sendCommand('sub_minute'),
 		},
 
+		adjust_time: {
+			// Arbitrary +/- adjustment for users who want a single button
+			// to bump the timer by, say, +2:30 or -15s. Wraps the host's
+			// add_seconds action; the host enforces the LITE 59:59
+			// ceiling internally so a positive delta on a LITE host that
+			// would push past 1h is silently swallowed.
+			name: 'Adjust Time (+/- MM:SS)',
+			options: [
+				{
+					type: 'dropdown',
+					id: 'direction',
+					label: 'Direction',
+					default: 'add',
+					choices: [
+						{ id: 'add', label: 'Add (+)' },
+						{ id: 'sub', label: 'Subtract (-)' },
+					],
+				},
+				{ type: 'number', id: 'minutes', label: 'Minutes', default: 0, min: 0, max: 59 },
+				{ type: 'number', id: 'seconds', label: 'Seconds', default: 30, min: 0, max: 59 },
+			],
+			callback: async (action: { options: Record<string, unknown> }) => {
+				const total = Number(action.options['minutes']) * 60 + Number(action.options['seconds'])
+				if (total === 0) return
+				const signed = action.options['direction'] === 'sub' ? -total : total
+				return sendCommand('add_seconds', { seconds: signed })
+			},
+		},
+
 		load_time: {
 			name: 'Load Time (seconds)',
 			options: [{ type: 'number', id: 'seconds', label: 'Duration (seconds)', default: 300, min: 0, max: 86399 }],
